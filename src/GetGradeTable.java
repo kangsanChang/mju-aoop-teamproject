@@ -41,12 +41,12 @@ public class GetGradeTable extends JPanel {
 		// ----------- DB -------------
 		Connection DB = makeConnection();
 
-		String ratiosql = ("SELECT * FROM settings");
+		String ratiosql = ("SELECT * FROM cal_ratio_settings;");
 		PreparedStatement ratiopstmt = DB.prepareStatement(ratiosql);
 		ResultSet ra = ratiopstmt.executeQuery();
 		int att = 0; int mid = 0; int fin = 0; int hw = 0; int quiz = 0; int ann = 0; int rep = 0; int etc = 0;
 		while(ra.next()) {
-				//att = Integer.parseInt(ra.getString("attendratio"));
+				att = Integer.parseInt(ra.getString("attendratio"));
 				mid = Integer.parseInt(ra.getString("midratio"));
 				fin = Integer.parseInt(ra.getString("finalratio"));
 				hw = Integer.parseInt(ra.getString("hwratio"));
@@ -55,7 +55,7 @@ public class GetGradeTable extends JPanel {
 				rep = Integer.parseInt(ra.getString("reportratio"));
 				etc = Integer.parseInt(ra.getString("etcratio"));
 		}
-		String title[] = {"", "attend / "+10, "midExam / "+mid, "finExam / "+fin,
+		String title[] = {"", "attend / "+att, "midExam / "+mid, "finExam / "+fin,
 				"HW / "+hw, "QUIZ / "+quiz, "announce / "+ann, 
 				"Report / "+rep, "etc / "+etc, "Total", "Grade"};
 		String sql = ("SELECT st.name, sc.mid, sc.final, sc.hw, sc.quiz, sc.announcement, sc.report, sc.etc FROM student st, score sc WHERE st.stukey = sc.stukey;");
