@@ -16,10 +16,11 @@ public class Button_changePercent extends JFrame {
 	public Button_changePercent() throws SQLException {
 		Connection DB = makeConnection();
 		
-		String ratiosql = ("SELECT * FROM settings");
+		String ratiosql = ("SELECT * FROM cal_ratio_settings");
 		PreparedStatement ratiopstmt = DB.prepareStatement(ratiosql);
 		ResultSet ra = ratiopstmt.executeQuery();
 				while(ra.next()) {		
+				String att = ra.getString("attendratio");
 				String mid = ra.getString("midratio");
 				String fin = ra.getString("finalratio");
 				String hw = ra.getString("hwratio");
@@ -30,7 +31,7 @@ public class Button_changePercent extends JFrame {
 				
 				String title[] = {"attend", "midExam", "finExam", "HW", "QUIZ", "conf", "Report", "etc"};
 				String data[][] = {
-						{"10",mid,fin,hw,quiz,ann,rep,etc}
+						{att,mid,fin,hw,quiz,ann,rep,etc}
 				};
 				JTable table_changeGrade = new JTable(data, title);
 				JScrollPane sp = new JScrollPane(table_changeGrade);
@@ -62,5 +63,4 @@ public class Button_changePercent extends JFrame {
 		}
 		return con;
 	}
-
 }

@@ -18,7 +18,6 @@ import javax.swing.JTextField;
 public class GetGradeTable extends JPanel {
 	public GetGradeTable() throws SQLException {
 		this.setLayout(new BorderLayout());
-		this.setSize(1000, 800);
 		
 		JPanel controlPanel = new JPanel(new BorderLayout()); // control area
 		JPanel controlButton = new JPanel(); // button area
@@ -40,61 +39,106 @@ public class GetGradeTable extends JPanel {
 		
 		// ----------- DB -------------
 		Connection DB = makeConnection();
-
+		
+		// get total student count
+		String countsql = ("SELECT COUNT(stukey) FROM student");
+		PreparedStatement pstmts = DB.prepareStatement(countsql);
+		ResultSet count = pstmts.executeQuery();
+		int rowCount = 0;
+		while(count.next()) { rowCount = Integer.parseInt(count.getString(1)); }
+		System.out.println(rowCount);
+		// DB get cal ratio
 		String ratiosql = ("SELECT * FROM cal_ratio_settings;");
 		PreparedStatement ratiopstmt = DB.prepareStatement(ratiosql);
 		ResultSet ra = ratiopstmt.executeQuery();
-		int att = 0; int mid = 0; int fin = 0; int hw = 0; int quiz = 0; int ann = 0; int rep = 0; int etc = 0;
+		int[] ratioArray = new int[8];
 		while(ra.next()) {
-				att = Integer.parseInt(ra.getString("attendratio"));
-				mid = Integer.parseInt(ra.getString("midratio"));
-				fin = Integer.parseInt(ra.getString("finalratio"));
-				hw = Integer.parseInt(ra.getString("hwratio"));
-				quiz = Integer.parseInt(ra.getString("quizratio"));
-				ann = Integer.parseInt(ra.getString("announcementratio"));
-				rep = Integer.parseInt(ra.getString("reportratio"));
-				etc = Integer.parseInt(ra.getString("etcratio"));
+			for(int i=0; i<8; i++) {
+				ratioArray[i] = ra.getInt(i+1);
+				System.out.println(ratioArray[i]);
+			}
 		}
-		String title[] = {"", "attend / "+att, "midExam / "+mid, "finExam / "+fin,
-				"HW / "+hw, "QUIZ / "+quiz, "announce / "+ann, 
-				"Report / "+rep, "etc / "+etc, "Total", "Grade"};
+		String title[] = {"", "attend / "+ratioArray[0], "midExam / "+ratioArray[1], "finExam / "+ratioArray[2],
+				"HW / "+ratioArray[3], "QUIZ / "+ratioArray[4], "announce / "+ratioArray[5], 
+				"Report / "+ratioArray[6], "etc / "+ratioArray[7], "Total", "Grade"};
+
+		// DB get max ratio
+		String maxsql = ("SELECT * FROM max_settings;");
+		PreparedStatement maxpstmt = DB.prepareStatement(maxsql);
+		ResultSet max = maxpstmt.executeQuery();
+		int[] maxArray = new int[8];
+		while(max.next()) {
+			for(int i=0; i<8; i++) {
+				maxArray[i] = max.getInt(i+1);
+				System.out.println(maxArray[i]);
+			}
+		}
+		// DB attendance score
+		String attsql = ("SELECT * FROM attendance;");
+		PreparedStatement attpstmt = DB.prepareStatement(attsql);
+		ResultSet at = attpstmt.executeQuery();
+		int[] attScore = new int[rowCount];
+		int attstudent = 0;
+		double attcount = 0;
+		String late = "late"; String no = "no"; String ok = "ok";
+		while(at.next()) {
+			for(int i = 1; i<18; i++) {
+				String temp = at.getString(i);
+				if(temp == null) {
+					attcount += 0.5;
+				} else if (temp.equals("late")) {
+					attcount += 0.5;
+				} else if (temp.equals("ok")) {
+					attcount += 1;
+				}
+			}
+			attScore[attstudent] = (int)attcount;
+			System.out.println(attScore[attstudent]);
+			attstudent ++;
+			attcount = 0;
+		}
+		// DB get score
 		String sql = ("SELECT st.name, sc.mid, sc.final, sc.hw, sc.quiz, sc.announcement, sc.report, sc.etc FROM student st, score sc WHERE st.stukey = sc.stukey;");
 		PreparedStatement pstmt = DB.prepareStatement(sql);
 		ResultSet rs = pstmt.executeQuery();
-		System.out.println("name   attend   mid   final   hw   quiz   announ  report  etc");
-		//String[][] data;
-		int rowcount = 0;
-		if(rs.last()) {
-			rowcount = rs.getRow();
-			rs.beforeFirst();
-		}
-		String data[][] = new String[rowcount][];
+		String data[][] = new String[rowCount][];
+		int[] Score = new int[8];
+		int totalScore = 0;
 		int n = 0;
 		while(rs.next()) {
-			data[n] = new String[]  {rs.getString(1),"10",rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5),rs.getString(6),rs.getString(7),rs.getString(8),"100","A+"};
+			Score[0] = attScore[n]*ratioArray[0]/maxArray[0];
+			System.out.println(attScore[n]);
+			System.out.println(ratioArray[0]);
+			System.out.println(maxArray[0]);
+			
+			totalScore += Score[0];
+			for(int i=2; i<=8; i++) {
+				Score[i-1] = rs.getInt(i)*ratioArray[i-1]/maxArray[i-1];
+				totalScore += Score[i-1];
+			}
+			data[n] = new String[]  {
+					rs.getString(1)
+					//,Integer.toString(rs.getInt(2)*ratioArray[1]/maxArray[1])
+					,Integer.toString(Score[0])
+					,Integer.toString(Score[1])
+					,Integer.toString(Score[2])
+					,Integer.toString(Score[3])
+					,Integer.toString(Score[4])
+					,Integer.toString(Score[5])
+					,Integer.toString(Score[6])
+					,Integer.toString(Score[7])
+					,Integer.toString(totalScore) 
+					,"A+"};
+			totalScore = 0;
 			n++;
 		}
-//		String attsql = ("SELECT * FROM attendence");
-//		PreparedStatement attpstmt = DB.prepareStatement(attsql);
-//		ResultSet at = attpstmt.executeQuery();
-//		int[] attScore = new int[rowcount];
-//		int attcount = 0;
-//		while(at.next()) {
-//			
-//		}
-		// --------------- mockup -----------------------------
-//        String data[][] = {
-//            {"adam","10","20","20","10","10","10","10","10","100","A+"},
-//            {"max","10","20","20","10","10","10","10","10","100","A+"},
-//            {"john","10","20","20","10","10","10","10","10","100","A+"}
-//        };
+		
         // ----------------------------------------------------
         JTable table_score = new JTable(data, title);
         JScrollPane sp = new JScrollPane(table_score);
         
         this.add(sp, BorderLayout.CENTER);
-        
-        this.setSize(1200, 800);
+//        this.setSize(WIDTH, HEIGHT);
         this.setVisible(true);
         
         btn_changeGrade.addActionListener(listen_changeGrade);
