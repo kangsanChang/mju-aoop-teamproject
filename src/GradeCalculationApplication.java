@@ -25,7 +25,7 @@ public class GradeCalculationApplication extends JFrame{
 		gt = new GetGradeTable();
 		st = new StatisticTable();
 		
-		// panel �빊遺쏙옙
+		// panel 한글 체크
 		attendance.add(at);
 		getGrade.add(gt);
 		statistic.add(st);
