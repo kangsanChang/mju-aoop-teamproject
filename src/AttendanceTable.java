@@ -10,7 +10,7 @@ public class AttendanceTable extends JPanel {
             {"2","baba", "25"},
             {"3","challot", "26"}
         };
-        // �뀒�씠釉� �깮�꽦
+        // 한글 한글
         JTable table = new JTable(data, title);
         JScrollPane sp = new JScrollPane(table);
        add(sp);
